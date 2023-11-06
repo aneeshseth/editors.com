@@ -27,7 +27,7 @@ export default function Page() {
         >
           Create, Discover, All-at-One. Destination.
         </h1>
-        <h3 style={{ color: "gray", marginBottom: "38px" }}>© Powered By Aevy's Video Mastery Cohort</h3>
+        <h3 style={{ color: "gray", marginBottom: "38px" }}>© Aevy's Ultimate Creator/Editor Infrastructure</h3>
         <div className="flex flex-col sm:flex-row items-center justify-center w-full max-w-screen-lg mt-4 ml-10">
           <div className="box" style={{margin: "10px", marginRight: "200px"}}>
             <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">

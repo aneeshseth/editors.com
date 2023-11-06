@@ -30,20 +30,32 @@ const Page = () => {
     const [position, setPosition] = useState("bottom")
     let [loading, setLoading] = useState(true);
     let [color, setColor] = useState("#ffffff");
+    const formData = new FormData();
     const [creatorS, setCreatorState] = useRecoilState(creatorState)
     const [editorS, setEditorState] = useRecoilState(editorState)
-    const [video, setVideo] = useState('');
     const videoRef = useRef(null);
     const notify = () => {
         toast.success('The filters have been applied.')
     };
     const handleVideoChange = (e: any) => {
         console.log(e.target.files[0]);
-        setVideo(e.target.files[0]);
+        formData.append('video', e.target.files[0]);
     }
 
-    const handelSubmit = () => {
-        console.log("submtited video for transcoding.")
+    async function handelSubmit() {
+        try {
+            const uploadVid = await axios.post(`${API_BACKEND_URL}/upload`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: localStorage.getItem('token')
+                }
+            })
+            const data = await uploadVid.data;
+            alert("lol")
+            console.log(data)
+        } catch (err) {
+            console.log(err)
+        }
     }
     
     async function getUser() {
@@ -91,7 +103,7 @@ const Page = () => {
     if (creator) {
         return (
         <div className="flex h-screen text-white" style={{ backgroundColor: "black", height: "100%" }}>
-        <div className="flex" style={{marginLeft: "15px"}}>
+          <div className="flex" style={{marginLeft: "15px"}}>
             <div className='hide-image'  style={{ height: "100vh", width: "37vw" }}>
             <div style={{display: "flex", flexDirection: "column", justifyContent: "space-between", marginTop: "20px"}}>
             <div style={{width: "70px", height: "70px", marginLeft: "3px", top: "0px", marginBottom: "40px"}}>
@@ -101,17 +113,17 @@ const Page = () => {
             </div>
             <div style={{display: 'flex', flexDirection: "column", height: "90vh", justifyContent: "space-between"}}>
             <Select style={{ marginBottom: "20px" }}>
-                <SelectTrigger id="designation" className="bg-black">
+                <SelectTrigger id="designation" className="bg-black" style={{border: "none", backgroundColor: "purple"}}>
                 <SelectValue placeholder="Location" />
                 </SelectTrigger>
                 <SelectContent position="popper">
                 <SelectItem value="Remote">Remote</SelectItem>
-                <SelectItem value="Remote/In-Person">Remote/In-Person</SelectItem>
+                <SelectItem value="Remote/In-Person">Hybrid</SelectItem>
                 <SelectItem value="In-Person">In-Person</SelectItem>
                 </SelectContent>
             </Select>
             <Select style={{ marginBottom: "20px" }}>
-                <SelectTrigger id="designation" className="bg-black">
+                <SelectTrigger id="designation" className="bg-black" style={{border: "none", backgroundColor: "green"}}> 
                 <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent position="popper">
@@ -121,7 +133,7 @@ const Page = () => {
                 </SelectContent>
             </Select>
             <Select style={{ marginBottom: "20px" }}>
-                <SelectTrigger id="designation" className="bg-black">
+                <SelectTrigger id="designation" className="bg-black" style={{border: "none", backgroundColor: "orange"}}>
                 <SelectValue placeholder="Genre" />
                 </SelectTrigger>
                 <SelectContent position="popper">
@@ -168,27 +180,28 @@ const Page = () => {
         )
     } else {
         return (
-            <div style={{height: "100%", width: "100wh", border: "solid", background: "black"}}>
-        <div style={{ margin: "10px" }}>
-            <Button style={{ position: "absolute", top: "15px", right: "20px" }}>Upload (+)</Button>
+        <div style={{height: "100%", width: "100wh", border: "solid", background: "black"}}>
+            <div style={{ margin: "10px" }}>
             <form
-    className="upload-form"
-    action="http://localhost:3004/upload"
-    method="post"
-    encType="multipart/form-data"
-    onSubmit={handelSubmit}
-  >
-    <input
-      className="file-input"
-      type="file"
-      name="video"
-      accept="video/mp4"
-      onChange={handleVideoChange}
-    />
-    <Button className="upload-button" type="submit">
-      Upload
-    </Button>
-  </form>
+                className="upload-form"
+                encType="multipart/form-data"
+            >
+                <input
+                className="file-input"
+                type="file"
+                name="video"
+                accept="video/mp4"
+                onChange={handleVideoChange}
+                style={{marginTop: "5px"}}
+                />
+                <Button className="upload-button" onClick={async () => {
+                    await handelSubmit().then(() => {
+                        alert("he")
+                    })
+                }} style={{ position: "absolute", top: "15px", right: "20px" }}>
+                    Upload (+)
+                </Button>
+            </form>
             </div>
             <div className="video-grid " style={{margin: "30px", marginTop: "60px"}}>
             <div className="video-item">

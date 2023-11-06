@@ -92,7 +92,7 @@ function Page() {
           </div>
           <div className='responsive-card'>
             {enterState === "in" ? (
-              <Card className="max-w-[350px] bg-black mt-4 md:mt-6">
+              <Card className="max-w-[350px] bg-black mt-4 md:mt-6 mr-10">
                 <CardHeader>
                   <CardTitle style={{ color: "white" }}>SignIn</CardTitle>
                   <CardDescription>Please Enter the Relevant details below.</CardDescription>
