@@ -23,8 +23,8 @@ import { verify } from './middleware/verify'
 
 const s3 = new S3Client({
     credentials: {
-        accessKeyId: "AKIATBHO5RAE2GVIHZZ7",
-        secretAccessKey: "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"
+        accessKeyId: process.env.ACCESS_ID!,
+        secretAccessKey: process.env.ACCESS_KEY!
     },
     region: "us-west-2"
 })
