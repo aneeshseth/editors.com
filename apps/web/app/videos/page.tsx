@@ -51,10 +51,10 @@ const Page = () => {
                 }
             })
             const data = await uploadVid.data;
-            alert("lol")
-            console.log(data)
+            toast.success("Video will be uploaded and then trascoded sucessfully soon!")
         } catch (err) {
             console.log(err)
+            toast.error("Video Uploading Failed.")
         }
     }
     
@@ -77,6 +77,17 @@ const Page = () => {
             console.log(err)
         }
     }
+
+    async function getAllVideos() {
+        try {
+            const getVideoRefereceUrls = await axios.get(`${API_BACKEND_URL}/videos`)
+            
+        } catch (err) {
+
+        }
+    }
+
+
     async function callStack() {
         await getUser();
     }
@@ -182,10 +193,6 @@ const Page = () => {
         return (
         <div style={{height: "100%", width: "100wh", border: "solid", background: "black"}}>
             <div style={{ margin: "10px" }}>
-            <form
-                className="upload-form"
-                encType="multipart/form-data"
-            >
                 <input
                 className="file-input"
                 type="file"
@@ -195,13 +202,13 @@ const Page = () => {
                 style={{marginTop: "5px"}}
                 />
                 <Button className="upload-button" onClick={async () => {
-                    await handelSubmit().then(() => {
-                        alert("he")
-                    })
+                    await handelSubmit()
                 }} style={{ position: "absolute", top: "15px", right: "20px" }}>
                     Upload (+)
                 </Button>
-            </form>
+                <Button onClick={async ()=>{
+                    await getAllVideos()
+                }}>Check S3</Button>
             </div>
             <div className="video-grid " style={{margin: "30px", marginTop: "60px"}}>
             <div className="video-item">
@@ -226,3 +233,7 @@ const Page = () => {
 };
 
 export default Page;
+
+
+
+

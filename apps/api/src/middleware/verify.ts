@@ -8,7 +8,8 @@ dotenv.config()
 export async function verify(req: Request, res: Response, next: NextFunction) {
     try {
         const bearerToken = req.headers.authorization;
-        jwt.verify(bearerToken!, process.env.ACCESS_KEY!, async (err, decoded) => {
+        console.log("bear token")
+        jwt.verify(bearerToken!, "ENV_KEY", async (err, decoded) => {
             if (err) {
                 console.log(err)
                 return res.sendStatus(403)

@@ -3,6 +3,7 @@ const app = express()
 const port = 4001
 import cors from 'cors'
 import userRoutes from './routes/userRoutes'
+import videoRoutes from './routes/videoRoutes'
 import dotenv from 'dotenv'
 import ffmpeg from "fluent-ffmpeg";
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
@@ -21,23 +22,25 @@ import {S3Client, PutObjectCommand, GetObjectCommand} from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { verify } from './middleware/verify'
 
+app.use(express.static('public'));
 const s3 = new S3Client({
     credentials: {
         accessKeyId: process.env.ACCESS_ID!,
-        secretAccessKey: process.env.ACCESS_KEY!
+        secretAccessKey: process.env.ACCESS_KEY_AWS!
     },
     region: "us-west-2"
 })
 
 
 app.use("/",userRoutes);
+app.use("/", videoRoutes)
 const storage = multer.memoryStorage()
 const upload = multer({storage: storage})
 
 app.post('/upload', upload.single('video'), async (req: Request, res: Response) => {
     const bearerToken = req.headers.authorization;
     let username: any;
-    jwt.verify(bearerToken!, process.env.ACCESS_KEY!, async (err, decoded) => {
+    jwt.verify(bearerToken!, "ENV_KEY", async (err, decoded) => {
         if (err) {
             console.log(err)
             return res.sendStatus(403)
@@ -71,7 +74,6 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
     }
     const command2 = new GetObjectCommand(getObjectParams)
     const url = await getSignedUrl(s3, command2, {expiresIn: 3700})  
-
     /*
     @Video Transcoding
     */
@@ -122,8 +124,15 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
         };
         const command3 = new PutObjectCommand(s3Params)
         await s3.send(command3)
+        const getObjectParams = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: `m3u8s/${username}/${myuuid}`,
+        }
+        const command8 = new GetObjectCommand(getObjectParams)
+        const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
+        console.log("m3u8 url")
+        console.log(url6)
     }, 14000)
-
     /*
     @Thumbnail Creator
     */
@@ -133,30 +142,32 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
         folder: outputDir,
         size: '320x240'
     })
-    const params = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: `thumbnails/${username}/${myuuid}`,
-        Body: req.file?.buffer,
-        ContentType: req.file?.mimetype
-    }
-    const command0 = new PutObjectCommand(params)
-    await s3.send(command0)
-    const getObjectParams = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: `thumbnails/${username}/${myuuid}`,
-    }
-    const command8 = new GetObjectCommand(getObjectParams)
-    const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
-    console.log(url6)
-
+    setTimeout(async () => {
+        const filePath = `public/hls/techmartin.png`;
+        const fileContent = fs.readFileSync(filePath);
+        const params = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: `thumbnails/${username}/${myuuid}`,
+            Body: fileContent,
+            ContentType: 'image/png'
+        }
+        const command0 = new PutObjectCommand(params)
+        await s3.send(command0)
+        const getObjectParams = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: `thumbnails/${username}/${myuuid}`,
+        }
+        const command8 = new GetObjectCommand(getObjectParams)
+        const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
+        console.log(url6)
+    }, 14000)
     /*
     @Deleting all temporary files on the server
     */
     setTimeout(async () => {
         fs.readdir(outputDir, (err, files) => {
             if (err) {
-              console.error('Error reading directory:', err);
-              return;
+                console.log(err)
             }
             files.forEach(file => {
               const filePath = path.join(outputDir, file);
@@ -171,7 +182,6 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
           });   
     }, 14000)
     console.log(`${username}/${myuuid}`)
-    console.log(res.status(200).json({imageUrl: `${username}/${myuuid}`}))
     return res.status(200).json({imageUrl: `${username}/${myuuid}`})
     }
     catch (err) {
