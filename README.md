@@ -1,109 +1,49 @@
-# Turborepo starter with shadcn/ui#
+# editors.com - A content distribution Infrastructure for AevyTV - In Progress.
 
-![Static Badge](https://img.shields.io/badge/shadcn%2Fui-latest-blue?link=https%3A%2F%2Fgithub.com%2Fshadcn%2Fui)
+System Design of the Video Uploader (Transcoder):
 
-This is Turborepo starter with shadcn/ui pre-configured.
+<img width="1231" alt="image" src="https://github.com/aneeshseth/videotranscoding/assets/122401851/1298ab82-ccbd-4cdf-bd31-35997ccca56d">
 
-> **Note**
-> This example uses `pnpm` as package manager.
+![image](https://github.com/aneeshseth/aevy-creatorEditor/assets/122401851/668a6549-b907-413b-9fef-6461df07df9b)
 
-[npm version](https://github.com/dan5py/turborepo-shadcn-ui/tree/npm)
+AevyTV runs a Video Editing Cohort. They get editors from across the country in India, make them into top 1% editors, and give them access to a network of some of the best content creators across India and Abroad, like Ali Abdaal, Tanmay Bhat, Raj Shamani, and more.
 
-## Using this example
+## The problem
 
-Clone the repository:
+Currently, their system of providing opportunities to editors requires a lot of manual work. Google forms are submitted by students, and creators based on certain criteria, and those google forms are then manually looked through by Aevy to figure out who would be the best fit. This approach involves a lot of manual labour from the company's side, and more work from the creator's side too to fill out a google form, and the same from the editor's side. And also, all videos of editors go on unlisted youtube videos, and those links are what creators recieve. 
+And also, even if there was a one stop platform for editors to upload their content on which can be seen by editors, those videos would be of low resolution if not transcoded, and streamed using Adaptive Bitrate Streaming.
 
-```sh
-git clone https://github.com/dan5py/turborepo-shadcn-ui.git
-```
+## The solution
 
-Install dependencies:
+I am building a platform where editors, and creators can sign up, and within a few clicks and details:
 
-```sh
-cd turborepo-shadcn-ui
-pnpm install
-```
+Creators:
 
-### Add ui components
+- Creators would be on a page where they would have access to certain filters like Location, Opportunity Duration, and more, and editors while signing up would have chosen their preferences.
+- They would see a bunch of videos, all of those videos going through a recommendation algorithm (written in python as a microservice, communicating with the express backend using RabbitMQ), based on the number of people that have reached out to the creator who uploaded that video and the number of likes on the video.
+- Creators can look at those videos, judge an editor, and quickly within one click reach out through social media links added in the profile by the editor.
 
-Use the pre-made script:
 
-```sh
-pnpm ui:add <component-name>
-```
+Editors:
 
-> This works just like the add command in the `shadcn/ui` CLI.
+- Editors would get to select their work preferences, and can upload any video that they believe is an accurate representation of their work. These videos can be liked.
 
-## What's inside?
+![image](https://github.com/aneeshseth/aevy-creatorEditor/assets/122401851/9f846c3e-c9be-4876-b5eb-729400591887)
 
-This Turborepo includes the following packages/apps:
 
-### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications (🚀 powered by **shadcn/ui**)
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-### Utilities
+Tech Stack Used:
 
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```sh
-cd turborepo-shadcn-ui
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```sh
-cd turborepo-shadcn-ui
-pnpm dev
-```
-
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd turborepo-shadcn-ui
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```sh
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
-
-Learn more about shadcn/ui:
-
-- [Documentation](https://ui.shadcn.com/docs)
+- Typescript
+- Prisma (ORM)
+- ExpressJS
+- RabbitMQ
+- PostgreSQL
+- Zod
+- Recoil (State Management)
+- NextJS 13
+- ShadCN/ui
+- FFmpeg (Video Transcoding)
+- Python

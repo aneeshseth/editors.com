@@ -1,5 +1,13 @@
+"use client"
 import "@ui/styles/globals.css";
-
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
+import { Toaster } from "react-hot-toast"
 export default function RootLayout({
   children,
 }: {
@@ -7,7 +15,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+      <RecoilRoot>
+      {children}
+      <Toaster  position="bottom-right"
+  reverseOrder={false}></Toaster>
+  </RecoilRoot>
+      </body>
     </html>
   );
 }

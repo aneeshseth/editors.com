@@ -1,0 +1,36 @@
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    @media (max-width: 800px) {
+      grid-template-columns: repeat(2, 1fr); 
+    }
+  
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr; 
+    }
+  
+    gap: 16px; 
+  }
+  
+  
+  .video-item {
+    padding: 16px;
+    text-align: center;
+    border-radius: 20px;
+  }
+
+  .video-item:hover {
+    cursor: pointer;
+  }
+
+  @media (max-width: 1000px) {
+    .hide-image {
+      display: none;
+    }
+  }
+  
+
+  
+  
+  

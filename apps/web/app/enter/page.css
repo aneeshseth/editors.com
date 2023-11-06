@@ -1,0 +1,26 @@
+.responsive-image {
+    height: 100vh;
+    width: 55vw;
+}
+
+.responsive-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 1000px) {
+    .responsive-image {
+        display: none;
+    }
+    .responsive-card {
+        position: absolute;
+        width: 300px;
+        height: 200px;
+        z-index: 15;
+        top: 50%;
+        left: 50%;
+        margin: -100px 0 0 -150px;
+        background: red;
+    }
+}
