@@ -1,4 +1,6 @@
-# editors.com - A content distribution Infrastructure for AevyTV - In Progress.
+# editors.com 
+
+a content distribution Infrastructure for AevyTV - in Progress.
 
 System Design of the Video Uploader (Transcoder):
 
