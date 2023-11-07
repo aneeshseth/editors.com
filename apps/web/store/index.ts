@@ -13,6 +13,14 @@ export const creatorState = atom({
   },
 });
 
+/* video atom */
+export const videoState = atom({
+  key: 'video',
+  default: {
+    url: ""
+  }
+})
+
 
 /* creator selectors */
 
@@ -23,6 +31,7 @@ export const usernameState = selector({
     return user.username;
   }
 })
+
 
 export const firstnameState = selector({
   key: 'firstnameState',
@@ -89,4 +98,6 @@ export const lastnameStateE = selector({
     return user.lastname;
   }
 })
+
+
 

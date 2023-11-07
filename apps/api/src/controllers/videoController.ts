@@ -20,7 +20,6 @@ const s3 = new S3Client({
 const prisma = new PrismaClient();
 
 export async function getVideos(req: Request, res: Response) {
-    console.log("HELLOOOo")
     const command2 = new ListObjectsV2Command({
         Bucket: process.env.BUCKET_NAME,
         Prefix: 'thumbnails'
@@ -36,14 +35,39 @@ export async function getVideos(req: Request, res: Response) {
             Key: key.Key,
         }
         const command2 = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command2, {expiresIn: 3700})  
-        console.log(url);
-        images = [...images, url];
+        const url = await getSignedUrl(s3, command2, {expiresIn: 3700}) 
+        console.log("url") 
+        return url;
     }
+    const imagePromises = Contents?.map(async (imageKey) => getImage(imageKey));
+    const imageUrls = await Promise.all(imagePromises!);
+    console.log(imageUrls)
+    return res.status(200).json({images: imageUrls});
+}
 
-    Contents?.map(async (imageKey) => (
-        await getImage(imageKey)
-    ))
-    console.log(images)
-    return res.status(200).json({images: images});
+
+export async function getMasterFile(req: Request, res: Response) {
+    const {inputString} = req.body;
+    console.log("input string")
+    console.log(inputString[0])
+    const regex = /thumbnails\/([^/]+)\/([^/]+)/;
+    const match = inputString[0].match(regex);
+    if (match) {
+        const username = match[1]; 
+        const restOfString = match[2]; 
+        const uuid = restOfString.split("?")[0]
+        console.log("Username:", username);
+        console.log("UUID:", uuid);
+        const getObjectParams = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: `m3u8s/${username}/${uuid}`,
+        }
+        const command8 = new GetObjectCommand(getObjectParams)
+        const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
+        console.log(url6)
+        return res.status(200).json({url: url6})
+    } else {
+        console.log("Pattern not found in the input string.");
+        return res.sendStatus(400)
+    }
 }

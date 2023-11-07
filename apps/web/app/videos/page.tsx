@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { API_BACKEND_URL } from '@/constants';
-import {creatorState, usernameState, firstnameState, lastnameState, companynameState, editorState, usernameStateE, firstnameStateE, lastnameStateE} from '@/store/index'
+import {creatorState, usernameState, firstnameState, lastnameState, companynameState, editorState, usernameStateE, firstnameStateE, lastnameStateE, videoState} from '@/store/index'
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 
@@ -28,6 +28,8 @@ const Page = () => {
     const [accessCode, setAccessCode] = useState("");
     const [designation, setDesignation] = useState("");
     const [position, setPosition] = useState("bottom")
+    const [viU, setViU] = useRecoilState(videoState)
+    const [vidsRef, setVidsRef] = useState([])
     let [loading, setLoading] = useState(true);
     let [color, setColor] = useState("#ffffff");
     const formData = new FormData();
@@ -81,15 +83,27 @@ const Page = () => {
     async function getAllVideos() {
         try {
             const getVideoRefereceUrls = await axios.get(`${API_BACKEND_URL}/videos`)
-            
+            const data = await getVideoRefereceUrls.data;
+            console.log(data)
+            setVidsRef([...vidsRef, data.images])
         } catch (err) {
 
         }
     }
 
+    async function getMasterFile(vidR: string) {
+        const res = await axios.post(`${API_BACKEND_URL}/video`, {
+            inputString: vidR
+        })
+        const data = await res.data;
+        console.log(data)
+        setViU(data.url)
+        router.push("/videoplayer")
+    }
 
     async function callStack() {
         await getUser();
+        await getAllVideos()
     }
     useEffect(() => {
         !localStorage.getItem("token") ? router.push("/") : callStack()
@@ -191,7 +205,7 @@ const Page = () => {
         )
     } else {
         return (
-        <div style={{height: "100%", width: "100wh", border: "solid", background: "black"}}>
+        <div style={{height: "100vh", width: "100wh", border: "solid", background: "black"}}>
             <div style={{ margin: "10px" }}>
                 <input
                 className="file-input"
@@ -206,26 +220,13 @@ const Page = () => {
                 }} style={{ position: "absolute", top: "15px", right: "20px" }}>
                     Upload (+)
                 </Button>
-                <Button onClick={async ()=>{
-                    await getAllVideos()
-                }}>Check S3</Button>
             </div>
             <div className="video-grid " style={{margin: "30px", marginTop: "60px"}}>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
+            {vidsRef.map((key, index) => (
+                    <div className='video-item' onClick={() => getMasterFile(vidsRef[index])} key={key}>
+                        <img src={vidsRef[index]}/>
+                    </div>
+            ))}
             </div>
             </div>
         );
