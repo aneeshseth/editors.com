@@ -43,7 +43,15 @@ const Page = () => {
         console.log(e.target.files[0]);
         formData.append('video', e.target.files[0]);
     }
-
+    const playVideo = async () => {
+        const res = await axios.post(`${API_BACKEND_URL}/video`, {
+            inputString: "https://videotranscodingbucket.s3.us-west-2.amazonaws.com/thumbnails/techmartin/1699342207368?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIATBHO5RAE2GVIHZZ7%2F20231107%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231107T073049Z&X-Amz-Expires=3700&X-Amz-Signature=8cfe40a419085ecb19b1e6904839254c933e1b0c3f20efb47c04718db8036599&X-Amz-SignedHeaders=host&x-id=GetObject"
+        })
+        const data = await res.data;
+        console.log(data.url)
+        setViU(data.url)
+        router.push("/videoplayer")
+    }
     async function handelSubmit() {
         try {
             const uploadVid = await axios.post(`${API_BACKEND_URL}/upload`, formData, {
@@ -91,19 +99,19 @@ const Page = () => {
         }
     }
 
-    async function getMasterFile(vidR: string) {
+    async function getMasterFileName(vidR: string) {
         const res = await axios.post(`${API_BACKEND_URL}/video`, {
             inputString: vidR
         })
         const data = await res.data;
         console.log(data)
-        setViU(data.url)
-        router.push("/videoplayer")
+        //setViU(data.url)
+        //router.push("/videoplayer")
     }
 
     async function callStack() {
         await getUser();
-        await getAllVideos()
+       // await getAllVideos()
     }
     useEffect(() => {
         !localStorage.getItem("token") ? router.push("/") : callStack()
@@ -220,10 +228,13 @@ const Page = () => {
                 }} style={{ position: "absolute", top: "15px", right: "20px" }}>
                     Upload (+)
                 </Button>
+                <Button onClick={() => {
+                    playVideo()
+                }}>Play video!</Button>
             </div>
             <div className="video-grid " style={{margin: "30px", marginTop: "60px"}}>
             {vidsRef.map((key, index) => (
-                    <div className='video-item' onClick={() => getMasterFile(vidsRef[index])} key={key}>
+                    <div className='video-item' onClick={() => getMasterFileName(vidsRef[index])} key={key}>
                         <img src={vidsRef[index]}/>
                     </div>
             ))}

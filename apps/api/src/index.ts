@@ -34,109 +34,162 @@ const s3 = new S3Client({
 
 app.use("/",userRoutes);
 app.use("/", videoRoutes)
-const storage = multer.memoryStorage()
-const upload = multer({storage: storage})
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage});
 
 app.post('/upload', upload.single('video'), async (req: Request, res: Response) => {
-    const bearerToken = req.headers.authorization;
-    let username: any;
-    jwt.verify(bearerToken!, "ENV_KEY", async (err, decoded) => {
-        if (err) {
-            console.log(err)
-            return res.sendStatus(403)
-        }
-        if (!decoded) {
-            return res.sendStatus(403)
-        }
-        if (typeof decoded === "string") {
-            return res.sendStatus(403)
-        }
-        username = decoded.username;
-    })
-    /*
-    @Uploads the video to S3
-    */
-    const params = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: req.file?.originalname,
-        Body: req.file?.buffer,
-        ContentType: req.file?.mimetype
-    }
-    const videoUpload = new PutObjectCommand(params)
-    await s3.send(videoUpload)
+  const bearerToken = req.headers.authorization;
+  let username: any;
+  jwt.verify(bearerToken!, "ENV_KEY", async (err, decoded) => {
+      if (err) {
+          console.log(err);
+          return res.sendStatus(403);
+      }
+      if (!decoded) {
+          return res.sendStatus(403);
+      }
+      if (typeof decoded === "string") {
+          return res.sendStatus(403);
+      }
+      username = decoded.username;
+  });
 
-    /*
-    @Gets the URL of the Video Uploaded to S3
-    */
-    const getObjectParams = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: req.file?.originalname,
-    }
-    const command2 = new GetObjectCommand(getObjectParams)
-    const url = await getSignedUrl(s3, command2, {expiresIn: 3700})  
-    /*
-    @Video Transcoding
-    */
-    try {
+  /*
+  @Uploads the video to S3
+  */
+  const params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: req.file?.originalname,
+      Body: req.file?.buffer,
+      ContentType: req.file?.mimetype
+  };
+  const videoUpload = new PutObjectCommand(params);
+  await s3.send(videoUpload);
+
+  /*
+  @Gets the URL of the Video Uploaded to S3
+  */
+  const getObjectParams = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: req.file?.originalname,
+  };
+  const command2 = new GetObjectCommand(getObjectParams);
+  const videoUrl = await getSignedUrl(s3, command2, { expiresIn: 3700 });
+
+  /*
+  @Video Transcoding
+  */
+  try {
       const outputDir = path.join(__dirname, '..', 'public', 'hls');
       const uniqueVal = `${Date.now()}`;
-      const masterMenifestFileName = `${uniqueVal}.m3u8`;
       const bitrates = ['100k', '800k', '1200k', '2400k', '3000k'];
-      const ffmpegPromises = bitrates.map( async (bitrate) => {
-      const outputFileName = `${bitrate}-${uniqueVal}.m3u8`;
-      const videoPath = url;
-      ffmpeg()
-      .input(videoPath)
-        .outputOptions([
-          '-profile:v baseline', // H.264 profile for wider devide suppoet
-          '-level 3.0',  // H.264 level 
-          '-start_number 0', // Segment start number
-          '-hls_time 10',  // segnebt duration
-          '-hls_list_size 0', // number of segments to keep in playlist (0 means all)
-          '-f hls', // output format HLS
-        ])
-        .output(`${outputDir}/${outputFileName}`)
-        .videoBitrate(bitrate)
-        .audioCodec('aac')
-        .audioBitrate('128k')
-        .run();
-    });
-    
-    await Promise.all(ffmpegPromises);
-    /*
-    @Master.m3u8 file creation
-    */
-    const masterManifestContent: any = bitrates.map((bitrate) => {
-      const playlistFileName = `${bitrate}-${uniqueVal}.m3u8`;
-      const serverUrl = 'http://localhost:4002/public/hls'
-      return `#EXT-X-STREAM-INF:BANDWIDTH=${bitrate},RESOLUTION=720X480\n${playlistFileName}`;
-    }).join('\n');
-    fs.writeFileSync(`${outputDir}/${masterMenifestFileName}`,`#EXTM3U
-    ${masterManifestContent}`);
-    let myuuid = uuidv4();
-    setTimeout(async () => {
-        const fileContent = fs.readFileSync(`${outputDir}/${masterMenifestFileName}`);
-        const s3Params = {
-            Bucket: process.env.BUCKET_NAME,
-            Key: `m3u8s/${username}/${myuuid}`,
-            Body: fileContent,
-            ContentType: 'application/vnd.apple.mpegurl',
-        };
-        const command3 = new PutObjectCommand(s3Params)
-        await s3.send(command3)
-        const getObjectParams = {
-            Bucket: process.env.BUCKET_NAME,
-            Key: `m3u8s/${username}/${myuuid}`,
-        }
-        const command8 = new GetObjectCommand(getObjectParams)
-        const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
-        console.log("m3u8 url")
-        console.log(url6)
-    }, 14000)
-    /*
-    @Thumbnail Creator
-    */
-    ffmpeg(url).screenshots({
+
+      // Create an array to store promises for uploading .ts and .m3u8 files to S3
+      const s3UploadPromises: any[] = [];
+
+      await Promise.all(
+          bitrates.map(async (bitrate) => {
+              const outputFileName = `${bitrate}-${uniqueVal}.m3u8`;
+              const videoPath = videoUrl;
+  
+              const ffmpegPromise = new Promise(async (resolve, reject) => {
+                  const ffmpegCommand = ffmpeg()
+                      .input(videoPath)
+                      .outputOptions([
+                          '-profile:v baseline',
+                          '-level 3.0',
+                          '-start_number 0',
+                          '-hls_time 10',
+                          '-hls_list_size 0',
+                          '-f hls',
+                      ])
+                      .output(`${outputDir}/${outputFileName}`)
+                      .videoBitrate(bitrate)
+                      .audioCodec('aac')
+                      .audioBitrate('128k');
+  
+                  ffmpegCommand.on('end', async () => {
+                      console.log(`Video Transcoding Complete: ${outputFileName}`);
+  
+                      // Upload the .m3u8 file to S3
+                      const fileContent = fs.readFileSync(`${outputDir}/${outputFileName}`);
+                      const s3Params = {
+                          Bucket: process.env.BUCKET_NAME,
+                          Key: `hls/${username}/${outputFileName}`,
+                          Body: fileContent,
+                          ContentType: 'application/vnd.apple.mpegurl',
+                      };
+                      const command3 = new PutObjectCommand(s3Params);
+                      await s3.send(command3);
+  
+                      // Upload the associated .ts files
+                      setTimeout(() => {
+                        const tsFiles = fs.readdirSync(outputDir)
+                        .filter((file) => {
+                          const extension = path.extname(file);
+                          return extension === '.ts';
+                        });
+              
+                        console.log("ts files")
+                        console.log(tsFiles)
+                        const tsUploadPromises = tsFiles.map((tsFile) => {
+                            const tsFileContent = fs.readFileSync(`${outputDir}/${tsFile}`);
+                            const tsS3Params = {
+                                Bucket: process.env.BUCKET_NAME,
+                                Key: `hls/${username}/${tsFile}`,
+                                Body: tsFileContent,
+                                ContentType: 'video/MP2T', 
+                            };
+                            const tsCommand = new PutObjectCommand(tsS3Params);
+                            console.log("ts command")
+                            console.log(tsCommand)
+                            return s3.send(tsCommand);
+                        });
+                      }, 14000)
+  
+                      resolve(outputFileName);
+                  });
+  
+                  ffmpegCommand.on('error', (err) => {
+                      console.error('Error transcoding:', err);
+                      reject(err);
+                  });
+  
+                  ffmpegCommand.run();
+              });
+  
+              s3UploadPromises.push(ffmpegPromise);
+          })
+      );
+
+      await Promise.all(s3UploadPromises);
+
+      /*
+      @Master.m3u8 file creation
+      */
+      const masterMenifestFileName = `${uniqueVal}.m3u8`;
+      const masterManifestContent = bitrates.map((bitrate) => {
+          const playlistFileName = `${bitrate}-${uniqueVal}.m3u8`;
+          const s3HlsUrl = `https://${process.env.BUCKET_NAME}.s3.amazonaws.com/hls/${username}/${playlistFileName}`;
+          return `#EXT-X-STREAM-INF:BANDWIDTH=${bitrate},RESOLUTION=720x480\n${s3HlsUrl}`;
+      }).join('\n');
+
+      fs.writeFileSync(`${outputDir}/${masterMenifestFileName}`, `#EXTM3U\n${masterManifestContent}`);
+
+      // Upload the master .m3u8 file to S3
+      const masterFileContent = fs.readFileSync(`${outputDir}/${masterMenifestFileName}`);
+      const masterS3Params = {
+          Bucket: process.env.BUCKET_NAME,
+          Key: `hls/${username}/${masterMenifestFileName}`,
+          Body: masterFileContent,
+          ContentType: 'application/vnd.apple.mpegurl',
+      };
+      const command4 = new PutObjectCommand(masterS3Params);
+      await s3.send(command4);
+      
+
+      //thumbnail creator
+    ffmpeg(videoUrl).screenshots({
         timestamps: [0.5],
         filename: `${username}`,
         folder: outputDir,
@@ -147,7 +200,7 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
         const fileContent = fs.readFileSync(filePath);
         const params = {
             Bucket: process.env.BUCKET_NAME,
-            Key: `thumbnails/${username}/${myuuid}`,
+            Key: `thumbnails/${username}/${uniqueVal}`,
             Body: fileContent,
             ContentType: 'image/png'
         }
@@ -155,39 +208,20 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
         await s3.send(command0)
         const getObjectParams = {
             Bucket: process.env.BUCKET_NAME,
-            Key: `thumbnails/${username}/${myuuid}`,
+            Key: `thumbnails/${username}/${uniqueVal}`,
         }
         const command8 = new GetObjectCommand(getObjectParams)
         const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
+        console.log("thumbnail")
         console.log(url6)
     }, 14000)
-    /*
-    @Deleting all temporary files on the server
-    */
-    setTimeout(async () => {
-        fs.readdir(outputDir, (err, files) => {
-            if (err) {
-                console.log(err)
-            }
-            files.forEach(file => {
-              const filePath = path.join(outputDir, file);
-              if (fs.statSync(filePath).isFile()) {
-                fs.unlink(filePath, (err) => {
-                  if (err) {
-                    console.log(err)
-                  }
-                });
-              }
-            });
-          });   
-    }, 14000)
-    console.log(`${username}/${myuuid}`)
-    return res.status(200).json({imageUrl: `${username}/${myuuid}`})
-    }
-    catch (err) {
+      return res.status(200).json({ imageUrl: `thumbnails/${username}/${uniqueVal}.m3u8` });
+  } catch (err) {
       console.log(err);
-    }
-})
+      return res.status(500).json({ error: 'An error occurred' });
+  }
+});
+
   
 
 app.listen(process.env.PORT!, () => {

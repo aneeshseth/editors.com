@@ -5,28 +5,33 @@ import { useRecoilState } from 'recoil';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import '@videojs/http-streaming';
-
+import {API_BACKEND_URL} from '@/constants'
 function Page() {
   const [viURL, setViURL] = useRecoilState(videoState);
   const videoRef = useRef(null);
 
   useEffect(() => {
-    const player = videojs(videoRef.current, {
-      controls: true,
-      sources: [
-        {
-          src: viURL,
-          type: 'application/x-mpegURL',
-        },
-      ],
-    });
-
-    return () => {
-      if (player) {
-        player.dispose();
-      }
-    };
-  }, [viURL]);
+    alert("helo")
+    try {
+      const player = videojs(videoRef.current, {
+        controls: true,
+        sources: [
+          {
+            src: `${API_BACKEND_URL}/stream/deg2edwu`,
+            type: 'application/x-mpegURL',
+          },
+        ],
+      });
+  
+      return () => {
+        if (player) {
+          player.dispose();
+        }
+      };
+    } catch (err) {
+      console.log(err)
+    }
+  }, []);
 
   return (
     <div style={{ height: "100vh", width: "100vw", background: "black" }}>
