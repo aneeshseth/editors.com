@@ -16,10 +16,8 @@ export const creatorState = atom({
 /* video atom */
 export const videoState = atom({
   key: 'video',
-  default: {
-    url: ""
-  }
-})
+  default: '',
+});
 
 
 /* creator selectors */

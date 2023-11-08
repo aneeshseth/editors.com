@@ -43,29 +43,27 @@ const Page = () => {
         console.log(e.target.files[0]);
         formData.append('video', e.target.files[0]);
     }
-    const playVideo = async () => {
-        const res = await axios.post(`${API_BACKEND_URL}/video`, {
-            inputString: "https://videotranscodingbucket.s3.us-west-2.amazonaws.com/thumbnails/techmartin/1699342207368?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIATBHO5RAE2GVIHZZ7%2F20231107%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231107T073049Z&X-Amz-Expires=3700&X-Amz-Signature=8cfe40a419085ecb19b1e6904839254c933e1b0c3f20efb47c04718db8036599&X-Amz-SignedHeaders=host&x-id=GetObject"
-        })
-        const data = await res.data;
-        console.log(data.url)
-        setViU(data.url)
-        router.push("/videoplayer")
-    }
     async function handelSubmit() {
         try {
             const uploadVid = await axios.post(`${API_BACKEND_URL}/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    Authorization: localStorage.getItem('token')
                 }
             })
             const data = await uploadVid.data;
+            console.log(data)
             toast.success("Video will be uploaded and then trascoded sucessfully soon!")
         } catch (err) {
             console.log(err)
             toast.error("Video Uploading Failed.")
         }
+    }
+
+    async function streamManifest(urlForManifest: string) {
+        let match = urlForManifest.match(/thumbnails\/(\d+)/);
+        console.log(match[1])
+        setViU(`http://localhost:4001/stream/${match[1]}`)
+        router.push("/videoplayer")
     }
     
     async function getUser() {
@@ -80,7 +78,7 @@ const Page = () => {
                 setCreator(false)
                 setEditorState(data.user)
             } else {
-                setCreator(false)
+                setCreator(true)
                 setCreatorState(data.user)
             }
         } catch (err) {
@@ -99,19 +97,11 @@ const Page = () => {
         }
     }
 
-    async function getMasterFileName(vidR: string) {
-        const res = await axios.post(`${API_BACKEND_URL}/video`, {
-            inputString: vidR
-        })
-        const data = await res.data;
-        console.log(data)
-        //setViU(data.url)
-        //router.push("/videoplayer")
-    }
+
 
     async function callStack() {
         await getUser();
-       // await getAllVideos()
+      await getAllVideos()
     }
     useEffect(() => {
         !localStorage.getItem("token") ? router.push("/") : callStack()
@@ -181,32 +171,14 @@ const Page = () => {
             </div>
         </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", width: "100wh", backgroundColor: "black" }}>
-            <div style={{height: "100%", width: "100wh", backgroundColor: "black"}}>
-            <div className="video-grid " style={{margin: "20px"}}>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            <div className="video-item">
-                <img src="https://res.cloudinary.com/dysiv1c2j/image/upload/v1697562021/rnur4zroyllckdlgbfbb.png"/>
-            </div>
-            </div>
-            </div>
+            <div className="video-grid" style={{ margin: "30px", marginTop: "60px" }}>
+            {vidsRef[0].map((key, index) => (
+                  <div className='video-item' key={index} style={{width: "100%", height: "100%"}} >
+                    <img src={key} style={{borderRadius: "20px"}}  onClick={() => {
+                    streamManifest(key)
+                }}/>
+                </div>
+            ))}
             </div>
             </div>
         </div>
@@ -228,15 +200,14 @@ const Page = () => {
                 }} style={{ position: "absolute", top: "15px", right: "20px" }}>
                     Upload (+)
                 </Button>
-                <Button onClick={() => {
-                    playVideo()
-                }}>Play video!</Button>
             </div>
-            <div className="video-grid " style={{margin: "30px", marginTop: "60px"}}>
-            {vidsRef.map((key, index) => (
-                    <div className='video-item' onClick={() => getMasterFileName(vidsRef[index])} key={key}>
-                        <img src={vidsRef[index]}/>
-                    </div>
+            <div className="video-grid" style={{ margin: "30px", marginTop: "60px" }}>
+            {vidsRef[0].map((key, index) => (
+                  <div className='video-item' key={index}  onClick={() => {
+                    streamManifest(key)
+                }}>
+                    <img src={key} style={{borderRadius: "20px"}}/>
+                </div>
             ))}
             </div>
             </div>
@@ -245,6 +216,11 @@ const Page = () => {
 };
 
 export default Page;
+
+/*
+ 
+
+*/
 
 
 
