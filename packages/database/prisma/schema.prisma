@@ -19,6 +19,9 @@ model Editor {
   Videos Video[]
   srccontact String?
   reachedOutTo Int
+  location String
+  role String
+  genre String
 }
 
 model Video {

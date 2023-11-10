@@ -9,7 +9,10 @@ export const signupEditorInput = z.object({
     firstname: z.string(),
     lastname: z.string(),
     username: z.string(),
-    email: z.string()
+    email: z.string(),
+    location: z.string(),
+    role: z.string(),
+    genre: z.string()
 })
 
 

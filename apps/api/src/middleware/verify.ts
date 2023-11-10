@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken'
 import {PrismaClient} from 'database'
 const prisma = new PrismaClient();
 import dotenv from 'dotenv'
+
 dotenv.config()
 
 export async function verify(req: Request, res: Response, next: NextFunction) {

@@ -18,6 +18,7 @@
     "bcryptjs": "^2.4.3",
     "common": "*",
     "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
     "database": "*",
     "dotenv": "^16.3.1",
     "esbuild": "^0.19.5",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.5",
     "@types/cors": "^2.8.15",
+    "@types/crypto-js": "^4.2.1",
     "@types/fluent-ffmpeg": "^2.1.23",
     "@types/jsonwebtoken": "^9.0.4",
     "@types/multer": "^1.4.9",

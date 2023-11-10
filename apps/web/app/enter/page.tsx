@@ -20,6 +20,9 @@ function Page() {
     const [lastname, setLastname] = useState("")
     const [email, setEmail] = useState("")
     const [companyname, setCompanyname] = useState("")
+    const [location, setLocation] = useState("");
+    const [role, setRole] = useState("")
+    const [genre, setGenre] = useState("")
     const router = useRouter()
     const notifySuccess = () => {
         toast.success('Action successful.')
@@ -44,13 +47,18 @@ function Page() {
         }
     }
     async function signUp() {
-        if (designation === 'editor') {
+        if (designation === 'Editor') {
+          console.log("ediutor designation")
+          console.log(designation)
             try {
                 const res = await axios.post(`${API_BACKEND_URL}/editor`, {
                     firstname: firstname,
                     lastname: lastname,
                     username: username,
-                    email: email
+                    email: email,
+                    location: location,
+                    genre: genre,
+                    role: role
                 })
                 const data = await res.data;
                 console.log(data)
@@ -62,8 +70,10 @@ function Page() {
                 notifyFailure()
                 console.log(err)
             }  
-        }
-        try {
+        } else {
+          console.log("creator designation")
+          console.log(designation)
+          try {
             const res = await axios.post(`${API_BACKEND_URL}/creator`, {
                 firstname: firstname,
                 lastname: lastname,
@@ -80,13 +90,18 @@ function Page() {
             notifyFailure()
             console.log(err)
         }
+      }
+    }
+    async function getDesignation(e) {
+      console.log(e)
+      setDesignation(e)
     }
     return (
-        <div className="flex h-screen text-white" style={{ background: "black" }}>
+        <div className="flex h-screen text-white" style={{ background: "black", height: "100%", }}>
         <div className="flex">
           <div style={{ marginRight: "120px" }}>
             <img
-              src="https://images.unsplash.com/photo-1490810194309-344b3661ba39?auto=format&fit=crop&q=80&w=2896&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="https://images.unsplash.com/photo-1511406361295-0a1ff814c0ce?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               className='responsive-image'
             />
           </div>
@@ -116,7 +131,7 @@ function Page() {
                         <Label htmlFor="designation" style={{ color: "white" }}>
                           Designation
                         </Label>
-                        <Select value={designation} onValueChange={(e) => setDesignation(e)}>
+                        <Select value={designation} onValueChange={(e) => getDesignation(e)}>
                           <SelectTrigger id="designation" className="bg-white">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
@@ -173,7 +188,7 @@ function Page() {
                         <Label htmlFor="designation" style={{ color: "white" }}>
                           Designation
                         </Label>
-                        <Select value={designation} onValueChange={(e) => setDesignation(e)}>
+                        <Select value={designation} onValueChange={(e) => getDesignation(e)}>
                           <SelectTrigger id="designation" className="bg-white">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
@@ -193,6 +208,49 @@ function Page() {
                         )}
                     </div>
                   </form>
+                  <div style={{marginTop: "10px"}}>
+                  <h1 htmlFor="accessCode" style={{ color: "white" }}>
+                              Preferences:
+                    </h1>
+                    </div>
+              <div  style={{ marginBottom: "20px", marginTop: "10px" }}>             
+              <Select onValueChange={(e) => setLocation(e)}>
+                <SelectTrigger id="designation"  style={{border: "none"}}>
+                <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                <SelectItem value="Remote">Remote</SelectItem>
+                <SelectItem value="Remote/In-Person">Hybrid</SelectItem>
+                <SelectItem value="In-Person">In-Person</SelectItem>
+                </SelectContent>
+            </Select>
+            </div>
+            <div  style={{ marginBottom: "20px", marginTop: "20px" }}>             
+            <Select style={{ marginBottom: "20px" }} onValueChange={(e) => setRole(e)}>
+                <SelectTrigger id="designation" style={{border: "none"}}> 
+                <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                <SelectItem value="Internship">Internship</SelectItem>
+                <SelectItem value="Freelance">Freelance</SelectItem>
+                <SelectItem value="Fulltime">Fulltime</SelectItem>
+                </SelectContent>
+            </Select>
+            </div>
+            <div  style={{ marginBottom: "20px", marginTop: "20px" }}>             
+            <Select style={{ marginBottom: "20px" }} onValueChange={(e) => setGenre(e)}>
+                <SelectTrigger id="designation"  style={{border: "none"}}>
+                <SelectValue placeholder="Genre" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                <SelectItem value="Infotainment">Infotainment</SelectItem>
+                <SelectItem value="Entertainment">Entertainment</SelectItem>
+                <SelectItem value="Documentaries">Documentaries</SelectItem>
+                <SelectItem value="Tech">Tech</SelectItem>
+                <SelectItem value="Vlog/Personal Content">Vlog/Personal Content</SelectItem>
+                </SelectContent>
+            </Select>
+            </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <Button variant="outline" className="text-black border-white" onClick={() => setEnterState("in")}>

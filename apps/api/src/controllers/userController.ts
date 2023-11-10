@@ -9,14 +9,17 @@ import dotenv from 'dotenv'
 dotenv.config()
 import nodemailer from 'nodemailer'
 
+
 const prisma = new PrismaClient();
 
 
 export async function signUpEditor(req: Request, res: Response) {
     const body = req.body;
+    console.log(body)
     const inputValidation = signupEditorInput.safeParse(body);
+    console.log(inputValidation)
     if (!inputValidation.success) return res.status(400).json({msg: 'invalid input'})
-    const {firstname, lastname, username, email} = body;
+    const {firstname, lastname, username, email, location, role, genre} = body;
     const uuid = uuidv4();
     console.log(uuid)
     const existingUserInEditor = await prisma.editor.findFirst({
@@ -33,12 +36,16 @@ export async function signUpEditor(req: Request, res: Response) {
         return res.sendStatus(403)
    }
     const user = await prisma.editor.create({
-        data: {
-            firstname: firstname,
-            lastname: lastname,
-            username: username,
-            accesscode: uuid
-        }
+       data: {
+        firstname: firstname,
+        lastname: lastname,
+        username: username,
+        accesscode: uuid,
+        location: location,
+        genre: genre,
+        role: role,
+        reachedOutTo: 0
+       }
     })
     const tokenDetails = {
         id: user.id,

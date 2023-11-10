@@ -23,7 +23,8 @@ app.use(cors())
 import {S3Client, PutObjectCommand, GetObjectCommand} from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { verify } from './middleware/verify'
-
+import bcrypt from 'bcryptjs'
+import CryptoJS from 'crypto-js'
 app.use(express.static('public'));
 
 
@@ -32,6 +33,22 @@ app.use("/", videoRoutes)
 const storage = multer.memoryStorage()
 const upload = multer({storage: storage})
 app.post('/upload', upload.single('video'), async (req: Request, res: Response) => {
+  const bearerToken = req.headers.authorization;
+  console.log("bear token")
+  let username = ""
+  await jwt.verify(bearerToken!, "ENV_KEY", async (err, decoded) => {
+      if (err) {
+          console.log(err)
+          return res.sendStatus(403)
+      }
+      if (!decoded) {
+          return res.sendStatus(403)
+      }
+      if (typeof decoded === "string") {
+          return res.sendStatus(403)
+      }
+      username = decoded.username;
+  })
   const s3 = new S3Client({
     credentials: {
         accessKeyId: "AKIATBHO5RAE2GVIHZZ7",
@@ -57,7 +74,7 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
   console.log(url)
   try {
     const outputDir = path.join(__dirname, '..', 'public', 'hls');
-    const uniqueVal = `${Date.now()}`;
+    const uniqueVal = `${encryptString(username)}=${Date.now()}`;
     const masterMenifestFileName = `${uniqueVal}.m3u8`;
     const bitrates = ['100k', '800k', '1200k', '2400k', '3000k'];
     const ffmpegPromises = bitrates.map( async (bitrate) => {
@@ -116,6 +133,9 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
     const command8 = new GetObjectCommand(getObjectParams)
     const url6 = await getSignedUrl(s3, command8, {expiresIn: 3700})  
     console.log(url6)
+    let match = url6.match(/thumbnails\/(\d+)/);
+    console.log("url decrypt")
+    console.log(match![1])
     return res.sendStatus(200)
   }, 14000)
   }
@@ -124,6 +144,35 @@ app.post('/upload', upload.single('video'), async (req: Request, res: Response) 
   }
 })
 
+const originalChars = "abcdefghijklmnopqrstuvwxyz";
+const encryptedChars = "1234567890!@#$%^&*()_+";
+
+type CharMap = { [key: string]: string };
+
+function createCharMap(): CharMap {
+  const charMap: CharMap = {};
+  for (let i = 0; i < originalChars.length; i++) {
+    charMap[originalChars[i]] = encryptedChars[i % encryptedChars.length];
+  }
+  return charMap;
+}
+
+function encryptString(inputString: string): string {
+  const charMap: CharMap = createCharMap();
+  const encryptedString = inputString.replace(/[a-z]/g, (match) => charMap[match] || match);
+  return encryptedString;
+}
+
+function decryptString(encryptedString: string): string {
+  const charMap: CharMap = createCharMap();
+  const reverseCharMap: CharMap = {};
+  originalChars.split('').forEach((char, index) => {
+    reverseCharMap[charMap[char]] = char;
+  });
+
+  const decryptedString = encryptedString.replace(/[0-9!@#$%^&*()_+]/g, (match) => reverseCharMap[match] || match);
+  return decryptedString;
+}
   
 
 app.listen(process.env.PORT!, () => {

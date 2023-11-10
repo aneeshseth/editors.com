@@ -32,11 +32,21 @@ const Page = () => {
     const [vidsRef, setVidsRef] = useState([])
     let [loading, setLoading] = useState(true);
     let [color, setColor] = useState("#ffffff");
+    const [location, setLocation] = useState("");
+    const [role, setRole] = useState("")
+    const [genre, setGenre] = useState("")
     const formData = new FormData();
     const [creatorS, setCreatorState] = useRecoilState(creatorState)
     const [editorS, setEditorState] = useRecoilState(editorState)
     const videoRef = useRef(null);
-    const notify = () => {
+    async function notify() {
+        const res = await axios.post(`${API_BACKEND_URL}/filter`, {
+            location: location,
+            role: role,
+            genre: genre
+        })
+        const data = await res.data;
+        setVidsRef(data.images)
         toast.success('The filters have been applied.')
     };
     const handleVideoChange = (e: any) => {
@@ -48,6 +58,7 @@ const Page = () => {
             const uploadVid = await axios.post(`${API_BACKEND_URL}/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': localStorage.getItem("token")
                 }
             })
             const data = await uploadVid.data;
@@ -60,7 +71,8 @@ const Page = () => {
     }
 
     async function streamManifest(urlForManifest: string) {
-        let match = urlForManifest.match(/thumbnails\/(\d+)/);
+        const regex = /thumbnails\/([^?]+)/;
+        const match = urlForManifest.match(regex);
         console.log(match[1])
         setViU(`http://localhost:4001/stream/${match[1]}`)
         router.push("/videoplayer")
@@ -74,6 +86,7 @@ const Page = () => {
                 }
             })
             const data = await getUser.data;
+            console.log(data)
             if (data.designation == 'editor') {
                 setCreator(false)
                 setEditorState(data.user)
@@ -134,8 +147,9 @@ const Page = () => {
                 src="https://pbs.twimg.com/profile_images/1688283261724684288/38bh9HB3_400x400.jpg"
                 />
             </div>
-            <div style={{display: 'flex', flexDirection: "column", height: "90vh", justifyContent: "space-between"}}>
-            <Select style={{ marginBottom: "20px" }}>
+            <div style={{display: 'flex', flexDirection: "column", height: "90vh"}}>
+            <div style={{marginBottom: "30px"}}>
+            <Select style={{ marginBottom: "20px" }} onValueChange={(e) => setLocation(e)}>
                 <SelectTrigger id="designation" className="bg-black" style={{border: "none", backgroundColor: "purple"}}>
                 <SelectValue placeholder="Location" />
                 </SelectTrigger>
@@ -145,7 +159,9 @@ const Page = () => {
                 <SelectItem value="In-Person">In-Person</SelectItem>
                 </SelectContent>
             </Select>
-            <Select style={{ marginBottom: "20px" }}>
+            </div>
+            <div style={{marginBottom: "30px"}}>
+            <Select style={{ marginBottom: "20px" }} onValueChange={(e) => setRole(e)}>
                 <SelectTrigger id="designation" className="bg-black" style={{border: "none", backgroundColor: "green"}}> 
                 <SelectValue placeholder="Role" />
                 </SelectTrigger>
@@ -155,7 +171,9 @@ const Page = () => {
                 <SelectItem value="Fulltime">Fulltime</SelectItem>
                 </SelectContent>
             </Select>
-            <Select style={{ marginBottom: "20px" }}>
+            </div>
+            <div style={{marginBottom: "30px"}}>
+            <Select style={{ marginBottom: "20px" }} onValueChange={(e) => setGenre(e)}>
                 <SelectTrigger id="designation" className="bg-black" style={{border: "none", backgroundColor: "orange"}}>
                 <SelectValue placeholder="Genre" />
                 </SelectTrigger>
@@ -167,18 +185,22 @@ const Page = () => {
                 <SelectItem value="Vlog/Personal Content">Vlog/Personal Content</SelectItem>
                 </SelectContent>
             </Select>
+            </div>
             <Button onClick={notify}>Apply</Button>
             </div>
         </div>
             </div>
             <div className="video-grid" style={{ margin: "30px", marginTop: "60px" }}>
             {vidsRef[0].map((key, index) => (
-                  <div className='video-item' key={index} style={{width: "100%", height: "100%"}} >
-                    <img src={key} style={{borderRadius: "20px"}}  onClick={() => {
-                    streamManifest(key)
-                }}/>
+            key !== null && (
+                <div className='video-item' key={index} style={{ width: "100%", height: "100%" }}>
+                    <img src={key} style={{ borderRadius: "20px" }} onClick={() => {
+                        streamManifest(key)
+                    }} />
                 </div>
+                )
             ))}
+
             </div>
             </div>
         </div>

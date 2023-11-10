@@ -41,7 +41,10 @@ export async function getVideos(req: Request, res: Response) {
         const command2 = new GetObjectCommand(getObjectParams)
         const url = await getSignedUrl(s3, command2, {expiresIn: 3700}) 
         console.log("url") 
-        return url;
+      return url;
+    }
+    if (Contents == undefined) {
+      return res.status(200).json({images: []});
     }
     const imagePromises = Contents?.map(async (imageKey) => getImage(imageKey));
     const imageUrls = await Promise.all(imagePromises!);
@@ -49,13 +52,57 @@ export async function getVideos(req: Request, res: Response) {
     return res.status(200).json({images: imageUrls});
 }
 
+export async function getFilteredVideos(req: Request, res: Response) {
+  const {location, genre, role} = req.body;
+  console.log(process.env.BUCKET_NAME)
+  const command2 = new ListObjectsV2Command({
+      Bucket: process.env.BUCKET_NAME,
+      Prefix: 'thumbnails'
+  })
+  const { Contents, IsTruncated, NextContinuationToken } = await s3.send(command2);
+  let images: string[] = [];
+  /*
+  @Gets each image using the AWS image keys and adds it to the images array
+  */
+  async function getImage (key: any) {
+      const getObjectParams = {
+          Bucket: process.env.BUCKET_NAME,
+          Key: key.Key,
+      }
+      const command2 = new GetObjectCommand(getObjectParams)
+      const url = await getSignedUrl(s3, command2, {expiresIn: 3700}) 
+
+      console.log("url")
+          /*
+      @Check if this url with the username satisfies parameters
+      */
+      const regex = /thumbnails\/([^?]+)/;
+      const match = url.match(regex);
+      console.log(match![1])
+      console.log(match![1].split("%"))
+      const username = decryptString(match![1].split("%")[0])
+      const user = await prisma.editor.findFirst({
+        where: {
+          username: username
+        }
+      })
+      if (user?.location === location && user?.genre === genre && user?.role === role) return url;
+      else return null;
+  }
+  if (Contents == undefined) {
+    return res.status(200).json({images: []});
+  }
+  const imagePromises = Contents?.map(async (imageKey) => getImage(imageKey));
+  const imageUrls = await Promise.all(imagePromises!);
+  console.log(imageUrls)
+  return res.status(200).json({images: imageUrls});
+}
 
 
 export async function streamMasterFile(req: Request, res: Response) {
     try {
       const manifest = req.params.manifest;
       console.log(manifest)
-      console.log("WEIUKGDF")
       const manifestPath = path.join(__dirname, '..','public', 'hls', `${manifest}`);
       console.log(manifestPath)
       if ( !fs.existsSync(manifestPath) ) {
@@ -74,3 +121,29 @@ export async function streamMasterFile(req: Request, res: Response) {
     }
 }
 
+
+
+
+const originalChars = "abcdefghijklmnopqrstuvwxyz";
+const encryptedChars = "1234567890!@#$%^&*()_+";
+
+type CharMap = { [key: string]: string };
+
+function createCharMap(): CharMap {
+  const charMap: CharMap = {};
+  for (let i = 0; i < originalChars.length; i++) {
+    charMap[originalChars[i]] = encryptedChars[i % encryptedChars.length];
+  }
+  return charMap;
+}
+
+function decryptString(encryptedString: string): string {
+  const charMap: CharMap = createCharMap();
+  const reverseCharMap: CharMap = {};
+  originalChars.split('').forEach((char, index) => {
+    reverseCharMap[charMap[char]] = char;
+  });
+
+  const decryptedString = encryptedString.replace(/[0-9!@#$%^&*()_+]/g, (match) => reverseCharMap[match] || match);
+  return decryptedString;
+}
