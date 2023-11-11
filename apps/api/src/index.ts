@@ -32,6 +32,10 @@ app.use("/",userRoutes);
 app.use("/", videoRoutes)
 const storage = multer.memoryStorage()
 const upload = multer({storage: storage})
+
+app.get("/", (req,res) => {
+  res.send("ehlloo")
+})
 app.post('/upload', upload.single('video'), async (req: Request, res: Response) => {
   const bearerToken = req.headers.authorization;
   console.log("bear token")
@@ -176,7 +180,7 @@ function decryptString(encryptedString: string): string {
   
 
 app.listen(process.env.PORT!, () => {
-  console.log(`server listening on port ${port}`)
+  console.log(`OYE HOYE ${port}`)
 })
 
 

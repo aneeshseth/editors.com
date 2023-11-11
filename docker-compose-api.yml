@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  si:
+    restart: always
+    ports:
+      - 4001:3005
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - network-example
+
+networks:
+  network-example:
+    external: true
+

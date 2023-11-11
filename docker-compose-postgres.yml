@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - 4446:5432
+    volumes:
+      - data:/var/lib/postgresql1/data
+    restart: always
+    environment:
+      POSTGRES_DB: db12
+      POSTGRES_PASSWORD: doll@2107
+      POSTGRES_USER: aneeshseth
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aneeshseth -d db12 -t 5"]
+      interval: 5s
+      timeout: 5s
+    networks:
+      - network-example
+
+volumes:
+  data:
+
+
+networks:
+  network-example:
+    external: true
+

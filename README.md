@@ -1,24 +1,24 @@
-# editors.com 
+# editor.com 
 
-the skeleton of a content distribution Infrastructure for AevyTV
+The skeleton of a content distribution Infrastructure for AevyTV (Containerized with Docker)
 
 System Design of the Video Uploader (Transcoder):
 
-<img width="1231" alt="image" src="https://github.com/aneeshseth/videotranscoding/assets/122401851/1298ab82-ccbd-4cdf-bd31-35997ccca56d">
-![Alt text](image.png)
-![Alt text](image-3.png)
-![Alt text](image-1.png)
-![Alt text](image-2.png)
-![Alt text](image-4.png)
-![Alt text](image-5.png)
+<img width="1320" alt="image" src="https://github.com/aneeshseth/editor.com/assets/122401851/5f8f5fcd-39d0-4793-a4c6-8820878f8293">
+<img width="1355" alt="image" src="https://github.com/aneeshseth/editor.com/assets/122401851/3897a840-0f33-4059-8eca-409e701d77ad">
+<img width="1224" alt="image" src="https://github.com/aneeshseth/editor.com/assets/122401851/7f495b40-e377-425e-bb8d-e5dd715ea462">
+
+
 
 
 AevyTV runs a Video Editing Cohort. They get editors from across the country in India, make them into top 1% editors, and give them access to a network of some of the best content creators across India and Abroad, like Ali Abdaal, Tanmay Bhat, Raj Shamani, and more.
+
 
 ## The problem
 
 Currently, their system of providing opportunities to editors requires a lot of manual work. Google forms are submitted by students, and creators based on certain criteria, and those google forms are then manually looked through by Aevy to figure out who would be the best fit. This approach involves a lot of manual labour from the company's side, and more work from the creator's side too to fill out a google form, and the same from the editor's side. And also, all videos of editors go on unlisted youtube videos, and those links are what creators recieve. 
 And also, even if there was a one stop platform for editors to upload their content on which can be seen by editors, those videos would be of low resolution if not transcoded, and streamed using Adaptive Bitrate Streaming.
+
 
 ## The solution
 
@@ -35,7 +35,10 @@ Editors:
 
 - Editors would get to select their work preferences, and can upload any video that they believe is an accurate representation of their work. These videos can be liked.
 
-![image](https://github.com/aneeshseth/aevy-creatorEditor/assets/122401851/9f846c3e-c9be-4876-b5eb-729400591887)
+
+<img width="1224" alt="image" src="https://github.com/aneeshseth/editor.com/assets/122401851/247a7f23-80f7-4b08-9ce9-8fd6d24c1978">
+<img width="1224" alt="image" src="https://github.com/aneeshseth/editor.com/assets/122401851/0232bb3e-338d-461d-8569-a234521b2051">
+<img width="793" alt="image" src="https://github.com/aneeshseth/editor.com/assets/122401851/b02c56d0-ebd3-4c5b-9335-d21b7e448586">
 
 
 
@@ -45,12 +48,9 @@ Tech Stack Used:
 - Typescript
 - Prisma (ORM)
 - ExpressJS
-- RabbitMQ
 - PostgreSQL
 - Zod
 - Recoil (State Management)
 - NextJS 13
 - ShadCN/ui
 - FFmpeg (Video Transcoding)
-- Python
-

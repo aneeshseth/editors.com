@@ -7,12 +7,12 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "ui:add": "pnpm --filter ui ui:add"
+    "ui:add": "pnpm --filter ui ui:add",
+    "doit": "npx turbo db:generate && cd apps/api && node dist/index.js"
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",
     "eslint": "^7.32.0",
-    "eslint-config-custom": "workspace:*",
     "prettier": "^2.5.1",
     "turbo": "latest"
   },
