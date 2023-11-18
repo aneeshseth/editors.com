@@ -1,4 +1,4 @@
-# editor.com 
+# editors.com 
 
 The skeleton of a content distribution Infrastructure for AevyTV (Containerized with Docker)
 
