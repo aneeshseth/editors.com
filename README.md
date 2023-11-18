@@ -6,6 +6,7 @@ The skeleton of a content distribution Infrastructure for AevyTV (Containerized 
 <img width="1355" alt="image" src="https://github.com/aneeshseth/editors.com/assets/122401851/7f83dc44-a33f-49e0-8994-521070a06a88">
 
 System Design of the Video Uploader (Transcoder):
+
 <img width="1355" alt="image" src="https://github.com/aneeshseth/editors.com/assets/122401851/2fbe98e6-0f09-4f59-a5ab-6d45333c9cdc">
 <img width="1355" alt="image" src="https://github.com/aneeshseth/editors.com/assets/122401851/409f78bb-3fd3-4711-a6c0-3b0eddd1f227">
 <img width="1355" alt="image" src="https://github.com/aneeshseth/editors.com/assets/122401851/9994c2a8-3f57-4ddf-b0b7-10d573d0bda5">
