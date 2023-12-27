@@ -1,6 +1,6 @@
 # editors.com 
 
-The skeleton of a content distribution Infrastructure for AevyTV (Containerized with Docker)
+The sample skeleton of a content distribution Infrastructure for AevyTV (Containerized with Docker)
 
 
 <img width="1355" alt="image" src="https://github.com/aneeshseth/editors.com/assets/122401851/7f83dc44-a33f-49e0-8994-521070a06a88">
